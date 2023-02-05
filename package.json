@@ -2,9 +2,9 @@
  "name": "api-prac",
  "version": "1.0.0",
  "description": "Learn api fundametals",
- "main": "index.js",
+ "main": "server.js",
  "scripts": {
-  "start": "nodemon app.js"
+  "start": "nodemon server.js"
  },
  "repository": {
   "type": "git",
