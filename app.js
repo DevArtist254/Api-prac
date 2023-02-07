@@ -6,6 +6,7 @@ const app = express()
 //////////////////////////////////////
 //Gobal Middlewares
 app.use(express.json())
+app.use(express.static(`${__dirname}/public`))
 
 app.use("/api/v1/tours", tourRouter)
 
