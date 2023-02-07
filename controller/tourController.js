@@ -9,11 +9,30 @@ const database = fs.readFileSync(urlToDB, "utf8", (err) => {
 
 const data = JSON.parse(database)
 
+///////////////////////////////////////////
+//Middleware
+exports.checkId = (req, res, next, val) => {
+ if (req.params.id * 1 > tours.length) {
+  return res.status(404).json({
+   status: "fail",
+   message: "Invalid ID",
+  })
+ }
+
+ next()
+}
+
 //////////////////////////////////
 //Controller
 
 exports.getAllTours = (req, res) => {
- res.status(200).send(data)
+ res.status(200).json({
+  status: "success",
+  requestedAt: req.requestTime,
+  tours: {
+   data,
+  },
+ })
 }
 
 exports.createATour = (req, res) => {
