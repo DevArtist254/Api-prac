@@ -1,7 +1,19 @@
 const mongoose = require(`mongoose`);
 
 const tourSchema = new mongoose.Schema({
-  name: String,
+  name: {
+    type: String,
+    required: [true, 'A tour must have a name'],
+    unique: [true, 'A tour should have a unique name'],
+  },
+  rating: {
+    type: Number,
+    default: 4.5,
+  },
+  price: {
+    type: Number,
+    required: [true, 'tour must have a price'],
+  },
 });
 
 const Tour = mongoose.model('Tour', tourSchema);
