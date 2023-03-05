@@ -29,10 +29,37 @@ const Tour = require('../model/tourModel');
 
 exports.getAllTours = async (req, res) => {
   try {
-    const tours = await Tour.find();
+    //Build query
+    //1. Build a shallow copy to manipulate
+    const copyQuery = { ...req.query };
+    //2. Delete excluded field from the shallow copy
+    //a.list the fields
+    const excludedField = ['sort', 'page', 'limit', 'fields'];
+    //b. foreach key found on the copy data delete
+    excludedField.forEach((el) => delete copyQuery[el]);
+
+    //3. Implementing equality feature
+    // req.query input {duration: {gte : 5}}
+    // expected output {duration: {$gte : 5}}
+    // data we are adding $ sign gte,gt,lte,lt for mongodb
+
+    //a.Convert to a string
+    let copyStringQuery = JSON.stringify(copyQuery);
+
+    //reaasign the string with the replaced matched string
+    copyStringQuery = copyStringQuery.replace(
+      /\b(gte|gt|lte|lt)\b/g,
+      (match) => `$${match}`
+    );
+
+    const query = Tour.find(JSON.parse(copyStringQuery));
+
+    //Execute query
+    const tours = await query;
 
     return res.status(200).json({
       status: 'success',
+      results: tours.length,
       data: {
         tours,
       },
