@@ -52,7 +52,21 @@ exports.getAllTours = async (req, res) => {
       (match) => `$${match}`
     );
 
-    const query = Tour.find(JSON.parse(copyStringQuery));
+    //FILTERING
+    let query = Tour.find(JSON.parse(copyStringQuery));
+
+    //SORTING
+    //note if -sort by largest to smallest order
+    //Check if sorting is implemented
+    if (req.query.sort) {
+      //convert to mongodb std of ',' to ' '
+      const sortby = req.query.sort.split(',').join(' ');
+      //reaasign by sorting
+      query = query.sort(sortby);
+    } else {
+      //default soting
+      query = query.sort('-createdAt');
+    }
 
     //Execute query
     const tours = await query;
