@@ -68,6 +68,34 @@ exports.getAllTours = async (req, res) => {
       query = query.sort('-createdAt');
     }
 
+    //FIELDS
+    //note if -sort by largest to smallest order
+    //Check if sorting is implemented
+    if (req.query.fields) {
+      //convert to mongodb std of ',' to ' '
+      const sortby = req.query.fields.split(',').join(' ');
+      //reaasign by sorting
+      query = query.select(sortby);
+    } else {
+      //default soting
+      query = query.select('-__v');
+    }
+
+    // PAGINATION from ?page=3&limit=10
+    //Default values and values
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 100;
+
+    // Formula created page if ?page=3&limit=10 page arangement will be page 1, 1 - 10 results page 2, 11 - 20
+    const skip = (page - 1) * limit;
+
+    query = query.skip(skip).limit(limit);
+
+    if (req.query.page) {
+      const numTours = await Tour.countDocuments();
+      if (skip >= numTours) throw new Error('This page does not exist');
+    }
+
     //Execute query
     const tours = await query;
 
