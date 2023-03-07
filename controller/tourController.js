@@ -27,6 +27,11 @@
 
 const Tour = require('../model/tourModel');
 
+exports.cheapTours = async (req, res, next) => {
+  req.query = { price: { lte: '1000' }, rating: { gte: '4' } };
+  next();
+};
+
 exports.getAllTours = async (req, res) => {
   try {
     //Build query
@@ -69,8 +74,8 @@ exports.getAllTours = async (req, res) => {
     }
 
     //FIELDS
-    //note if -sort by largest to smallest order
-    //Check if sorting is implemented
+    //note if -fields by largest to smallest order
+    //Check if fields is implemented
     if (req.query.fields) {
       //convert to mongodb std of ',' to ' '
       const sortby = req.query.fields.split(',').join(' ');
