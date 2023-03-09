@@ -26,6 +26,7 @@
 //Controller
 
 const Tour = require('../model/tourModel');
+const APIQueryFeature = require('../utils/apiQueryFeature');
 
 exports.cheapTours = async (req, res, next) => {
   req.query = { price: { lte: '1000' }, rating: { gte: '4' } };
@@ -34,75 +35,14 @@ exports.cheapTours = async (req, res, next) => {
 
 exports.getAllTours = async (req, res) => {
   try {
-    //Build query
-    //1. Build a shallow copy to manipulate
-    const copyQuery = { ...req.query };
-    //2. Delete excluded field from the shallow copy
-    //a.list the fields
-    const excludedField = ['sort', 'page', 'limit', 'fields'];
-    //b. foreach key found on the copy data delete
-    excludedField.forEach((el) => delete copyQuery[el]);
-
-    //3. Implementing equality feature
-    // req.query input {duration: {gte : 5}}
-    // expected output {duration: {$gte : 5}}
-    // data we are adding $ sign gte,gt,lte,lt for mongodb
-
-    //a.Convert to a string
-    let copyStringQuery = JSON.stringify(copyQuery);
-
-    //reaasign the string with the replaced matched string
-    copyStringQuery = copyStringQuery.replace(
-      /\b(gte|gt|lte|lt)\b/g,
-      (match) => `$${match}`
-    );
-
-    //FILTERING
-    let query = Tour.find(JSON.parse(copyStringQuery));
-
-    //SORTING
-    //note if -sort by largest to smallest order
-    //Check if sorting is implemented
-    if (req.query.sort) {
-      //convert to mongodb std of ',' to ' '
-      const sortby = req.query.sort.split(',').join(' ');
-      //reaasign by sorting
-      query = query.sort(sortby);
-    } else {
-      //default soting
-      query = query.sort('-createdAt');
-    }
-
-    //FIELDS
-    //note if -fields by largest to smallest order
-    //Check if fields is implemented
-    if (req.query.fields) {
-      //convert to mongodb std of ',' to ' '
-      const sortby = req.query.fields.split(',').join(' ');
-      //reaasign by sorting
-      query = query.select(sortby);
-    } else {
-      //default soting
-      query = query.select('-__v');
-    }
-
-    // PAGINATION from ?page=3&limit=10
-    //Default values and values
-    const page = req.query.page * 1 || 1;
-    const limit = req.query.limit * 1 || 100;
-
-    // Formula created page if ?page=3&limit=10 page arangement will be page 1, 1 - 10 results page 2, 11 - 20
-    const skip = (page - 1) * limit;
-
-    query = query.skip(skip).limit(limit);
-
-    if (req.query.page) {
-      const numTours = await Tour.countDocuments();
-      if (skip >= numTours) throw new Error('This page does not exist');
-    }
+    const feature = new APIQueryFeature(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .fields()
+      .paginate();
 
     //Execute query
-    const tours = await query;
+    const tours = await feature.query;
 
     return res.status(200).json({
       status: 'success',
