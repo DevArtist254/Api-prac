@@ -135,3 +135,75 @@ exports.deleteTour = async (req, res) => {
     });
   }
 };
+
+exports.getTourStats = async (req, res) => {
+  try {
+    const stats = await Tour.aggregate([
+      {
+        $match: { ratingsAverage: { $gte: 4.5 } },
+      },
+      {
+        $group: {
+          _id: '$difficulty',
+          avgPrice: {
+            $avg: '$price',
+          },
+          numRating: { $sum: '$price' },
+        },
+      },
+    ]);
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        stats,
+      },
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: 'Server error',
+    });
+  }
+};
+
+exports.getMonthlyPlan = async (req, res) => {
+  try {
+    //get the year you want to trace the data
+    const year = req.query.years;
+
+    const plan = await Tour.aggregate([
+      //Unwind(Deconsturcte) the array of dates to return each day of the data
+      { $unwind: '$startDates' },
+      //match the days required by user
+      {
+        $match: {
+          startDates: {
+            $gte: new Date(`${year}-01-01`),
+            $lte: new Date(`${year}-12-31`),
+          },
+        },
+      },
+      //Group the start dates
+      {
+        $group: {
+          _id: { $month: '$startDates' },
+          numTourStarts: { $sum: 1 },
+          tours: { $push: '$name' },
+        },
+      },
+      //Sort in ascending order
+      { $sort: { numTourStarts: -1 } },
+    ]);
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        plan,
+      },
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: 'Server error',
+    });
+  }
+};
