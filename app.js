@@ -34,7 +34,7 @@ app.all('*', (req, res, next) => {
   //Global handler input message status for bad routes
   const err = new Error(`${req.originalUrl} couldn't find it`);
   err.status = 'fail';
-  err.statusCode = '404';
+  err.statusCode = 404;
 
   next(err);
 });
