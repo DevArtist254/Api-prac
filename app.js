@@ -26,10 +26,17 @@ app.use('/api/v1/tours', tourRouter);
 
 //Bad input on route by the user
 app.all('*', (req, res, next) => {
-  res.status(400).json({
-    status: 'fail',
-    message: `${req.originalUrl} couldn't find it`,
-  });
+  // res.status(404).json({
+  //   status: 'fail',
+  //   message: `${req.originalUrl} couldn't find it`,
+  // });
+
+  //Global handler input message status for bad routes
+  const err = new Error(`${req.originalUrl} couldn't find it`);
+  err.status = 'fail';
+  err.statusCode = '404';
+
+  next(err);
 });
 
 //GLOBAL ERROR HANDLER
