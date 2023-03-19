@@ -27,6 +27,7 @@
     "dotenv": "16.0.3",
     "express": "4.18.2",
     "mongoose": "5.13.15",
+    "ndb": "^1.1.5",
     "slugify": "^1.6.5"
   },
   "devDependencies": {

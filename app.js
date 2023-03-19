@@ -21,4 +21,25 @@ app.use((req, res, next) => {
 
 app.use('/api/v1/tours', tourRouter);
 
+///////////////////////////////////////////
+//Gobal Error handler OPs
+
+//Bad input on route by the user
+app.all('*', (req, res, next) => {
+  res.status(400).json({
+    status: 'fail',
+    message: `${req.originalUrl} couldn't find it`,
+  });
+});
+
+// //GLOBAL ERROR HANDLER
+// app.use((err,req,res,next) => {
+//   //Access our global error handling object and set defaults
+//   err.statusCode = err.statusCode || 500;
+//   err.status = err.status || 'fail';
+
+//   //Response
+//   res.status(err.statusCode)
+// })
+
 module.exports = app;
