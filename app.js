@@ -1,5 +1,6 @@
 const express = require('express');
 //const morgan = require('morgan');
+const ApiErrorHandler = require('./utils/apiErrorHandler');
 const tourRouter = require('./routes/tourRouters');
 
 const app = express();
@@ -32,11 +33,11 @@ app.all('*', (req, res, next) => {
   // });
 
   //Global handler input message status for bad routes
-  const err = new Error(`${req.originalUrl} couldn't find it`);
-  err.status = 'fail';
-  err.statusCode = 404;
+  // const err = new Error(`${req.originalUrl} couldn't find it`);
+  // err.status = 'fail';
+  // err.statusCode = 404;
 
-  next(err);
+  next(new ApiErrorHandler(`${req.originalUrl} couldn't find it`, 404));
 });
 
 //GLOBAL ERROR HANDLER
