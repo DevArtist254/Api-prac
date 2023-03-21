@@ -28,6 +28,7 @@
 const Tour = require('../model/tourModel');
 const APIQueryFeature = require('../utils/apiQueryFeature');
 const catchAsync = require('../utils/catchAsync');
+const ApiErrorHandler = require('../utils/apiErrorHandler');
 
 exports.cheapTours = async (req, res, next) => {
   req.query = { price: { lte: '1000' }, rating: { gte: '4' } };
@@ -67,6 +68,11 @@ exports.createATour = catchAsync(async (req, res, next) => {
 exports.getATour = catchAsync(async (req, res, next) => {
   const tour = await Tour.findById(req.params.id);
 
+  //Null not found error
+  if (!tour) {
+    return next(new ApiErrorHandler('Not found', 404));
+  }
+
   return res.status(200).json({
     status: 'success',
     data: {
@@ -88,6 +94,11 @@ exports.updateTour = catchAsync(async (req, res, next) => {
     }
   );
 
+  //Null not found error
+  if (!tour) {
+    return next(new ApiErrorHandler('Not found', 404));
+  }
+
   return res.status(200).json({
     status: 'success',
     data: {
@@ -97,10 +108,15 @@ exports.updateTour = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteTour = catchAsync(async (req, res, next) => {
-  await Tour.findOneAndDelete(
+  const tour = await Tour.findOneAndDelete(
     //the doc id that we want to find and update
     req.params.id
   );
+
+  //Null not found error
+  if (!tour) {
+    return next(new ApiErrorHandler('Not found', 404));
+  }
 
   return res.status(204).json({
     status: 'success',
