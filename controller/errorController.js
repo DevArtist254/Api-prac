@@ -40,6 +40,15 @@ const duplicateErrorDB = (err) => {
   return new ApiErrorHandler(message, 400);
 };
 
+const validationError = (err) => {
+  const errVal = Object.values(err.errors).map((val) => val.message);
+  console.log(errVal);
+
+  const message = `invalid message`;
+
+  return new ApiErrorHandler(message, 400);
+};
+
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
@@ -84,6 +93,7 @@ module.exports = (err, req, res, next) => {
     //CastError invalid id
     if (error.kind === 'ObjectId') error = objectIdHandlerDB(error);
     if (error.code === 11000) error = duplicateErrorDB(error);
+    if (error.name === 'ValidationError') error = validationError(error);
 
     sendErrorProd(error, res);
   }
