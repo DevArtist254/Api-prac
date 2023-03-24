@@ -42,9 +42,8 @@ const duplicateErrorDB = (err) => {
 
 const validationError = (err) => {
   const errVal = Object.values(err.errors).map((val) => val.message);
-  console.log(errVal);
 
-  const message = `invalid message`;
+  const message = `invalid entry: ${errVal.join(',')}`;
 
   return new ApiErrorHandler(message, 400);
 };
@@ -93,7 +92,8 @@ module.exports = (err, req, res, next) => {
     //CastError invalid id
     if (error.kind === 'ObjectId') error = objectIdHandlerDB(error);
     if (error.code === 11000) error = duplicateErrorDB(error);
-    if (error.name === 'ValidationError') error = validationError(error);
+    if (err._message.match(/validation/gi)[0] === 'validation')
+      error = validationError(error);
 
     sendErrorProd(error, res);
   }
