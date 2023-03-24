@@ -92,6 +92,7 @@ module.exports = (err, req, res, next) => {
     //CastError invalid id
     if (error.kind === 'ObjectId') error = objectIdHandlerDB(error);
     if (error.code === 11000) error = duplicateErrorDB(error);
+    //[ 'errors', '_message : 'Tour validation failed'', 'statusCode', 'status' ]
     if (err._message.match(/validation/gi)[0] === 'validation')
       error = validationError(error);
 
