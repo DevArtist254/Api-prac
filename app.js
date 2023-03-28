@@ -3,6 +3,7 @@ const express = require('express');
 const ApiErrorHandler = require('./utils/apiErrorHandler');
 const globalErrorHandlerController = require('./controller/errorController');
 const tourRouter = require('./routes/tourRouters');
+const userRouter = require('./routes/userRouters');
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/user', userRouter);
 
 ///////////////////////////////////////////
 //Gobal Error handler OPs
