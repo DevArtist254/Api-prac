@@ -54,3 +54,31 @@ exports.login = catchAsync(async (req, res, next) => {
     token,
   });
 });
+
+exports.protect = catchAsync(async (req, res, next) => {
+  //Get the token
+  const { authorization } = req.headers;
+  let token;
+
+  //Extracting the token
+  if (authorization && authorization.startsWith('Bearer')) {
+    token = authorization.split(' ')[1];
+  }
+  if (!token) {
+    return next(new ApiErrorHandler('Kindly login, to gain access', 401));
+  }
+
+  //Verify the token
+  const decoded = await jwt.verify(token, process.env.JSON_SECURITY_KEY);
+
+  //Check if user still exists
+  const user = await User.findById(decoded.id);
+
+  if (!user) {
+    return next(new ApiErrorHandler('Kindly login, to gain access', 401));
+  }
+
+  //Check if user changed the password after the token was issued
+
+  next();
+});
