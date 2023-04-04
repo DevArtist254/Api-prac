@@ -18,7 +18,7 @@ app.use(express.static(`${__dirname}/public`));
 
 //Gobal middle to be used down the pipeline
 app.use((req, res, next) => {
-  req.requestTime = new Date().toISOString();
+  req.requestTime = new Date();
   next();
 });
 

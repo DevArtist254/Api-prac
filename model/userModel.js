@@ -38,6 +38,8 @@ const userSchema = new mongoose.Schema({
       message: 'Please confirm your password',
     },
   },
+  //To be updated in the UI
+  passwordChangedAt: Date,
 });
 
 userSchema.pre('save', async function (next) {
@@ -56,6 +58,20 @@ userSchema.methods.passwordCompare = async function (
   userPassword
 ) {
   return await bcryptjs.compare(currentPassword, userPassword);
+};
+
+userSchema.methods.changedPasswordAfter = function (JWTiat) {
+  if (this.passwordChangedAt) {
+    //convert our timestamp to ms to the base of 10 as an interger
+    const changedTimeStamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+
+    return JWTiat < changedTimeStamp;
+  }
+
+  return false;
 };
 
 const User = mongoose.model('User', userSchema);

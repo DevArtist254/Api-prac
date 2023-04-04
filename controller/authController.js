@@ -15,6 +15,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     email: req.body.email,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
+    //passwordChangedAt: req.requestTime,
   });
 
   const token = createToken(newUser._id);
@@ -75,10 +76,19 @@ exports.protect = catchAsync(async (req, res, next) => {
   const user = await User.findById(decoded.id);
 
   if (!user) {
-    return next(new ApiErrorHandler('Kindly login, to gain access', 401));
+    return next(new ApiErrorHandler('Kindly signup, to gain access', 401));
   }
 
+  //user.changedPasswordAfter(decoded.iat);
   //Check if user changed the password after the token was issued
+  if (user.changedPasswordAfter(decoded.iat)) {
+    return next(
+      new ApiErrorHandler(
+        'Password recently changed! Please log in again.',
+        401
+      )
+    );
+  }
 
   next();
 });

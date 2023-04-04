@@ -40,6 +40,10 @@ const duplicateErrorDB = (err) => {
   return new ApiErrorHandler(message, 400);
 };
 
+// const jwtExp = () =>{
+
+// }
+
 const validationError = (err) => {
   const errVal = Object.values(err.errors).map((val) => val.message);
 
@@ -95,7 +99,8 @@ module.exports = (err, req, res, next) => {
     //[ 'errors', '_message : 'Tour validation failed'', 'statusCode', 'status' ]
     if (err._message.match(/validation/gi)[0] === 'validation')
       error = validationError(error);
-
+    //    if (err.name === 'TokenExpiredError') err = jwtExp();
+    // if (err.name === 'JsonWebTokenError') err = jwtErr();
     sendErrorProd(error, res);
   }
 };
