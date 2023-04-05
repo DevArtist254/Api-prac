@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 // eslint-disable-next-line import/no-extraneous-dependencies
 const jwt = require('jsonwebtoken');
 const User = require('../model/userModel');
@@ -73,15 +74,15 @@ exports.protect = catchAsync(async (req, res, next) => {
   const decoded = await jwt.verify(token, process.env.JSON_SECURITY_KEY);
 
   //Check if user still exists
-  const user = await User.findById(decoded.id);
+  const currentUser = await User.findById(decoded.id);
 
-  if (!user) {
+  if (!currentUser) {
     return next(new ApiErrorHandler('Kindly signup, to gain access', 401));
   }
 
   //user.changedPasswordAfter(decoded.iat);
   //Check if user changed the password after the token was issued
-  if (user.changedPasswordAfter(decoded.iat)) {
+  if (currentUser.changedPasswordAfter(decoded.iat)) {
     return next(
       new ApiErrorHandler(
         'Password recently changed! Please log in again.',
@@ -90,5 +91,22 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
   }
 
+  //Grant access by setting the user one the request
+  req.user = currentUser;
+
   next();
 });
+
+/**
+ * Protect
+ * Resist to the current roles
+ */
+
+exports.restrictTo = (...roles) => (req, res, next) => {
+  // Check if the current user role inorder to proceed with the given fn
+  // test ['admin', 'lead-guide'] to user role
+  if (!roles.includes(req.user.role)) {
+    return next(new ApiErrorHandler("You don't have permission", 403));
+  }
+  next();
+};
