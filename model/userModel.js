@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const validator = require('validator');
 const bcryptjs = require('bcryptjs');
+const crypto = require('crypto');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -45,6 +46,8 @@ const userSchema = new mongoose.Schema({
   },
   //To be updated in the UI
   passwordChangedAt: Date,
+  passwordResetToken: String,
+  passwordResetExpires: Date,
 });
 
 userSchema.pre('save', async function (next) {
@@ -77,6 +80,22 @@ userSchema.methods.changedPasswordAfter = function (JWTiat) {
   }
 
   return false;
+};
+
+userSchema.methods.createPasswordResetToken = function () {
+  //Generate reset token from crypto
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  //Hash it
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  //password should expire after 10 min
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  return resetToken;
 };
 
 const User = mongoose.model('User', userSchema);
