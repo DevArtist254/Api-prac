@@ -50,6 +50,10 @@ const userSchema = new mongoose.Schema({
   passwordResetExpires: Date,
 });
 
+// userSchema.pre('save', function (next) {
+//   if (!this.isModified('password') || !this.new) return next();
+// });
+
 userSchema.pre('save', async function (next) {
   //space between getting the data and saving the data
   if (!this.isModified('password')) return next();

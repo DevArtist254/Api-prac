@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 // eslint-disable-next-line import/no-extraneous-dependencies
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const User = require('../model/userModel');
 const catchAsync = require('../utils/catchAsync');
@@ -149,9 +150,43 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
 
-    await user.save({ validateBeforeSave: false });
+    await user.save();
 
     return next(new ApiErrorHandler('Something went wrong!', 500));
   }
 });
-exports.resetPassword = (req, res, next) => {};
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  //Get user based on the token
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+  });
+
+  //if token has not expired and there is user, set the new password
+  if (!user || user.passwordResetExpires >= Date.now() + 10 * 60 * 1000) {
+    return next(new ApiErrorHandler('Something went wrong retry again', 401));
+  }
+
+  //Update the password
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+
+  await user.save({ validateBeforeSave: false });
+
+  //Log the user in, send JWT
+  const token = createToken(user._id);
+
+  return res.status(201).json({
+    status: 'success',
+    token,
+    data: {
+      user,
+    },
+  });
+});
