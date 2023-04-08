@@ -12,6 +12,28 @@ const createToken = (id) =>
     expiresIn: process.env.JSON_EXPIRES_IN,
   });
 
+const createSentToken = (user, statusCode, res) => {
+  const token = createToken(user._id);
+
+  const cookieOptions = {
+    expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+  };
+
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+  //Cookie creation
+  res.cookie('jwt', token, cookieOptions);
+
+  return res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: {
+      user,
+    },
+  });
+};
+
 exports.signup = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
     name: req.body.name,
@@ -21,15 +43,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     //passwordChangedAt: req.requestTime,
   });
 
-  const token = createToken(newUser._id);
-
-  return res.status(201).json({
-    status: 'success',
-    token,
-    data: {
-      user: newUser,
-    },
-  });
+  createSentToken(newUser, 201, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -51,12 +65,7 @@ exports.login = catchAsync(async (req, res, next) => {
     );
   }
 
-  //3. If everthing is okay, send token to then client
-  const token = createToken(user._id);
-  return res.status(201).json({
-    status: 'success',
-    token,
-  });
+  createSentToken(user, 201, res);
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -179,16 +188,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   await user.save({ validateBeforeSave: false });
 
-  //Log the user in, send JWT
-  const token = createToken(user._id);
-
-  return res.status(201).json({
-    status: 'success',
-    token,
-    data: {
-      user,
-    },
-  });
+  createSentToken(user, 201, res);
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
@@ -214,19 +214,5 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   //if so, updated password
   await updatedUser.save();
 
-  //Log the user in, send JWT
-  const token = createToken(updatedUser._id);
-
-  //Verify the token
-  // const decoded = await jwt.verify(token, process.env.JSON_SECURITY_KEY);
-
-  // updatedUser.changedPasswordAfter(decoded.iat);
-
-  return res.status(201).json({
-    status: 'success',
-    token,
-    data: {
-      updatedUser,
-    },
-  });
+  createSentToken(updatedUser, 201, res);
 });

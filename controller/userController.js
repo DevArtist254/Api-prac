@@ -38,24 +38,24 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteMe = catchAsync(async (req, res, next) => {
-  const updatedUser = await User.findOneAndDelete(
+  await User.findOneAndDelete(
     //the doc id that we want to find and update
     req.user.id
   );
 
-  //Null not found error
-  if (!updatedUser) {
-    return next(new ApiErrorHandler('Not found', 404));
-  }
+  //   //Null not found error
+  //   if (!updatedUser) {
+  //     return next(new ApiErrorHandler('Not found', 404));
+  //   }
 
-  if (
-    !(await updatedUser.passwordCompare(
-      req.body.passwordCurrent,
-      updatedUser.password
-    ))
-  ) {
-    return new ApiErrorHandler('Vaildation error, login again', 403);
-  }
+  //   if (
+  //     !(await updatedUser.passwordCompare(
+  //       req.body.passwordCurrent,
+  //       updatedUser.password
+  //     ))
+  //   ) {
+  //     return new ApiErrorHandler('Vaildation error, login again', 403);
+  //   }
 
   return res.status(204).json({
     status: 'success',
