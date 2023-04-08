@@ -190,3 +190,43 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  //Get the user from the collection
+  const { user, requestTime } = req;
+
+  const updatedUser = await User.findById(user._id).select('+password');
+
+  if (
+    !(await updatedUser.passwordCompare(
+      req.body.passwordCurrent,
+      updatedUser.password
+    ))
+  ) {
+    return new ApiErrorHandler('Vaildation error, login again', 403);
+  }
+  //Check if posted current password is correct
+  const { password, passwordConfirm } = req.body;
+  updatedUser.password = password;
+  updatedUser.passwordConfirm = passwordConfirm;
+  updatedUser.passwordChangedAt = requestTime;
+
+  //if so, updated password
+  await updatedUser.save();
+
+  //Log the user in, send JWT
+  const token = createToken(updatedUser._id);
+
+  //Verify the token
+  // const decoded = await jwt.verify(token, process.env.JSON_SECURITY_KEY);
+
+  // updatedUser.changedPasswordAfter(decoded.iat);
+
+  return res.status(201).json({
+    status: 'success',
+    token,
+    data: {
+      updatedUser,
+    },
+  });
+});
