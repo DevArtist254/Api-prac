@@ -1,5 +1,7 @@
 const mongoose = require(`mongoose`);
 const slugify = require(`slugify`);
+/**Embedding the entire docs */
+//const User = require('./userModel');
 
 const tourSchema = new mongoose.Schema(
   {
@@ -76,6 +78,36 @@ const tourSchema = new mongoose.Schema(
       type: Date,
       default: Date.now(),
     },
+    startLocation: {
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point'],
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
+    Locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point'],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+    //guides: Array,
+    guides: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   {
     toJSON: {
@@ -92,11 +124,35 @@ tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
 
+//virtual populate  - populate is bad for bad formance
+/**
+ * {
+  ref: Name of the model,
+  foreignField: How it named in the model we are ref,
+  localField: how we ref it in this model
+}
+ */
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id',
+});
+
 // Doc Middleware: runs before .save() and .create()
 tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
+
+// tourSchema.pre('save', async function (next) {
+//   //Get the set by the body and loop thru them to get the awaited user doc
+//   const promisedGuides = this.guides.map(async (id) => await User.findByid(id));
+
+//   //Finish all the awaited promises
+//   this.guides = await Promise.all(promisedGuides);
+
+//   next();
+// });
 
 //Query Middleware
 tourSchema.pre(/^find/, function (next) {
@@ -105,6 +161,19 @@ tourSchema.pre(/^find/, function (next) {
 
   next();
 });
+
+//Populating all docs
+/**
+ * tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt',
+  });
+
+  next();
+});
+
+ */
 
 tourSchema.post(/^find/, function (docs, next) {
   console.log(`Query took ${Date.now() - this.start} milliseconds!`);
