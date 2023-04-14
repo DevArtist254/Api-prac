@@ -12,8 +12,11 @@ const {
 } = require('../controller/tourController');
 
 const { protect, restrictTo } = require('../controller/authController');
+const reviewRouter = require('./reviewRouters');
 //Routing
 const router = express.Router();
+
+router.route('/:tourId/reviews', reviewRouter);
 
 router.route('/top-five-cheap').get(cheapTours, getAllTours);
 
