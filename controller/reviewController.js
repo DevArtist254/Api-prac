@@ -1,9 +1,16 @@
 const Review = require('../model/reviewModel');
 const catchAsync = require('../utils/catchAsync');
 const ApiErrorHandler = require('../utils/apiErrorHandler');
+const factory = require('./factoryHander');
+
+//Factory
+exports.deleteReview = factory.deleteOne(Review);
 
 exports.getAllReviews = catchAsync(async (req, res, next) => {
-  const reviews = await Review.find();
+  const filter = {};
+  if (req.params.tourId) filter.tour = req.params.tourId;
+
+  const reviews = await Review.find(filter);
 
   if (!reviews) {
     return next(new ApiErrorHandler('Reviews not found', 404));

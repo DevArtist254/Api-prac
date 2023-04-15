@@ -16,7 +16,8 @@ const reviewRouter = require('./reviewRouters');
 //Routing
 const router = express.Router();
 
-router.route('/:tourId/reviews', reviewRouter);
+//Nesting routes middleware
+router.use('/:tourId/reviews', reviewRouter);
 
 router.route('/top-five-cheap').get(cheapTours, getAllTours);
 

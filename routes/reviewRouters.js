@@ -6,13 +6,15 @@ const {
   getAllReviews,
   getAReview,
   createAReview,
+  deleteReview,
 } = require('../controller/reviewController');
 
 //Routing
-const router = express.Router({ mergeParams: false });
+const router = express.Router({ mergeParams: true });
 
 router.route('/').get(getAllReviews);
 router.route('/').post(protect, createAReview);
+router.route('/').delete(protect, deleteReview);
 
 router.route('/:reviewId').get(getAReview);
 
