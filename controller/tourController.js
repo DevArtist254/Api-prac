@@ -88,32 +88,7 @@ exports.getATour = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.updateTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findByIdAndUpdate(
-    //the doc id that we want to find and update
-    req.params.id,
-    //the update
-    req.body,
-    //what is beening returned to options
-    {
-      new: true,
-      runValidators: true,
-    }
-  );
-
-  //Null not found error
-  if (!tour) {
-    return next(new ApiErrorHandler('Not found', 404));
-  }
-
-  return res.status(200).json({
-    status: 'success',
-    data: {
-      tour,
-    },
-  });
-});
-
+exports.updateTour = factory.updateOne(Tour);
 exports.deleteTour = factory.deleteOne(Tour);
 
 exports.getTourStats = catchAsync(async (req, res, next) => {

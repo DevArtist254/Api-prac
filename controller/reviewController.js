@@ -5,6 +5,7 @@ const factory = require('./factoryHander');
 
 //Factory
 exports.deleteReview = factory.deleteOne(Review);
+exports.updateAReview = factory.updateOne(Review);
 
 exports.getAllReviews = catchAsync(async (req, res, next) => {
   const filter = {};
