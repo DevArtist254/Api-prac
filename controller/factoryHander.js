@@ -1,5 +1,6 @@
 const catchAsync = require('../utils/catchAsync');
 const ApiErrorHandler = require('../utils/apiErrorHandler');
+const APIQueryFeature = require('../utils/apiQueryFeature');
 
 exports.deleteOne = (Model) =>
   catchAsync(async (req, res, next) => {
@@ -58,8 +59,29 @@ exports.createOne = (Model) =>
 exports.getOne = (Model, pops) =>
   catchAsync(async (req, res, next) => {
     const query = Model.findById(req.params.id);
+    //{path: reviews}
     if (pops) query.populate(pops);
     const doc = await query;
+
+    return res.status(200).json({
+      status: 'success',
+      results: doc.length,
+      data: {
+        doc,
+      },
+    });
+  });
+
+exports.getAll = (Model) =>
+  catchAsync(async (req, res, next) => {
+    const feature = new APIQueryFeature(Model.find(), req.query)
+      .filter()
+      .sort()
+      .fields()
+      .paginate();
+
+    //Execute query
+    const doc = await feature.query;
 
     return res.status(200).json({
       status: 'success',

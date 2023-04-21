@@ -39,3 +39,11 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteMe = factory.deleteOne(User);
+
+exports.getMe = (req, res, next) => {
+  //Id hack
+  req.params.id = req.user.id;
+  next();
+};
+
+exports.getUser = factory.getOne(User);

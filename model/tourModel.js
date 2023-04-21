@@ -119,6 +119,9 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
+//High read and less writes
+//tourSchema.index({price : 1});
+
 //Virtualization
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
